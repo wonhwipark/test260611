@@ -1,0 +1,50 @@
+set(OLAIT_CORE_SOURCES
+    ${CMAKE_SOURCE_DIR}/Common/AitMngr/ch_L1cOlAitInfoBuilder.cpp
+    ${CMAKE_SOURCE_DIR}/Common/AitMngr/ch_L1cOlAitMngr.cpp
+    ${CMAKE_SOURCE_DIR}/Common/AitMngr/ch_L1cOlAitSendChecker.cpp
+    ${CMAKE_SOURCE_DIR}/Common/AitMngr/ch_L1cOlAitCmdSender.cpp
+)
+
+add_library(olait_core STATIC ${OLAIT_CORE_SOURCES})
+
+target_include_directories(olait_core
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/Common/Export
+        ${CMAKE_SOURCE_DIR}/Common/AitMngr
+)
+
+target_compile_features(olait_core PUBLIC cxx_std_17)
+
+if(MSVC)
+    # 헤더에서 명시 include를 강제하지 않기 위해 공용 타입 헤더를 강제 포함
+    target_compile_options(olait_core PRIVATE /FI"ch_L1cOlAitMngr.hpp")
+endif()
+
+find_package(GTest CONFIG QUIET)
+
+if(GTest_FOUND)
+    add_executable(olait_tests
+        ${CMAKE_SOURCE_DIR}/ch_L1cOlAitInfoBuilder_UT.cpp
+        ${CMAKE_SOURCE_DIR}/ch_L1cOlAitMngr_UT.cpp
+        ${CMAKE_SOURCE_DIR}/ch_L1cOlAitSendChecker_UT.cpp
+        ${CMAKE_SOURCE_DIR}/main.cpp
+    )
+
+    target_link_libraries(olait_tests
+        PRIVATE
+            olait_core
+            GTest::gtest
+            GTest::gmock
+            GTest::gtest_main
+    )
+
+    target_include_directories(olait_tests
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/Common/Export
+            ${CMAKE_SOURCE_DIR}/Common/AitMngr
+    )
+
+    if(MSVC)
+        target_compile_options(olait_tests PRIVATE /FI"ch_L1cOlAitMngr.hpp")
+    endif()
+endif()
